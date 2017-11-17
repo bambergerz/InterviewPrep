@@ -73,9 +73,10 @@ class Edge:
 
 
 class Graph:
-    def __init__(self):
+    def __init__(self, bidirectional=False):
         self._nodes = []
         self._edges = []
+        self._bidirectional = bidirectional
 
     def __str__(self):
         msg = ""
@@ -94,7 +95,8 @@ class Graph:
         source = edge.source
         target = edge.target
         source.add_neighbor(target)
-        target.add_neighbor(source)
+        if self._bidirectional:
+            target.add_neighbor(source)
         return True
 
     def get_node_by_id(self, node_id):
@@ -112,7 +114,7 @@ class Graph:
             print("cannot find node with this ID in the grap")
             return
 
-    def bfs(self, start_node, target_node, to_print=0):
+    def bfs(self, start_node, target_node, to_print=1):
         """
         
         :param start_node: the ID of the node from which we are starting
@@ -124,6 +126,7 @@ class Graph:
         assert isinstance(start_node, int), "start_node must be an int"
         assert isinstance(target_node, int), "target_node must be an int"
 
+        msg = "BFS path: "
         node = self.get_node_by_id(start_node)
         val = node.value
         if val == target_node:
@@ -136,20 +139,62 @@ class Graph:
 
         while not found:
             if frontier.empty():
+                msg += "failed"
                 if to_print:
-                    print "failed"
+                    print msg
                 return
             node = frontier.get()
-            if to_print:
-                print("visiting " + str(node))
+            msg += str(node) + " -> "
             explored.add(node)
             children = node.neighbors
             for child in children:
                 if child.value == target_node:
+                    msg += str(child)
                     if to_print:
-                        print("visiting " + str(child))
+                        print msg
                     return child
                 frontier.put(child)
+
+    def dfs(self, start_node, target_node, to_print=1):
+        """
+
+        :param start_node: the ID of the node from which we are starting
+        :param target_node: the ID of the node we are trying to reach
+        :param to_print: true if the user wants to print the traversal. false otherwise. 
+        :return: the node we are trying to reach or None if it cannot be found
+        """
+
+        assert isinstance(start_node, int), "start_node must be an int"
+        assert isinstance(target_node, int), "target_node must be an int"
+
+        msg = "DFS path: "
+        node = self.get_node_by_id(start_node)
+        val = node.value
+        if val == target_node:
+            return node
+
+        explored = set()
+        frontier = []
+        frontier.append(node)
+        found = False
+
+        while not found:
+            if len(frontier) == 0:
+                msg += "failed"
+                if to_print:
+                    print msg
+                return
+            node = frontier.pop()
+            msg += str(node) + " -> "
+            explored.add(node)
+            children = node.neighbors
+            for child in children:
+                if child.value == target_node:
+                    msg += str(child)
+                    if to_print:
+                        print msg
+                    return child
+                frontier.append(child)
 
 
 if __name__ == "__main__":
@@ -169,4 +214,5 @@ if __name__ == "__main__":
     g.add_edge(bc)
     g.add_edge(cd)
     g.bfs(0, 4, to_print=True)
+    g.dfs(0, 4, to_print=True)
     print(g)
