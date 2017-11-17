@@ -1,4 +1,5 @@
 from Queue import Queue
+import sys
 
 
 class Node:
@@ -83,6 +84,18 @@ class Graph:
         msg += "Nodes are: " + str(self._nodes) + "\n"
         msg += "Edges are: " + str(self._edges)
         return msg
+
+    @property
+    def nodes(self):
+        return self._nodes
+
+    @property
+    def edges(self):
+        return self._edges
+
+    def print_properties(self):
+        msg = "Bidirectional? " + str(self._bidirectional)
+        print msg
 
     def add_node(self, node):
         assert isinstance(node, Node), "node is not a Node instance"
@@ -196,15 +209,41 @@ class Graph:
                     return child
                 frontier.append(child)
 
+    def bellmen_ford(self, source):
+        """
+        
+        :param source: the source of the propagation for Bellman Ford algorithm.
+        an int which represents a valid node id.
+        :return: a tuple consisting of distances 
+        """
+        assert isinstance(source, int)
+
+        distances = {}
+        predecessors = {}
+        for node in self.nodes:
+            distances[node.node_id] = sys.maxint
+            predecessors[node.node_id] = None
+
+        origin = self.get_node_by_id(source)
+        distances[origin.node_id] = 0
+
+        for i in range(len(self.nodes) - 1):
+            for e in self.edges:
+                if distances[e.target.node_id] > distances[e.source.node_id] + e.weight:
+                    distances[e.target.node_id] = distances[e.source.node_id] + e.weight
+                    predecessors[e.target.node_id] = e.source.node_id
+
+        return distances, predecessors
+
 
 if __name__ == "__main__":
     a = Node(1)
     b = Node(2)
     c = Node(3)
     d = Node(4)
-    ab = Edge(a, b)
-    bc = Edge(b, c)
-    cd = Edge(c, d)
+    ab = Edge(a, b, 2)
+    bc = Edge(b, c, -1)
+    cd = Edge(c, d, 5)
     g = Graph()
     g.add_node(a)
     g.add_node(b)
@@ -215,4 +254,6 @@ if __name__ == "__main__":
     g.add_edge(cd)
     g.bfs(0, 4, to_print=True)
     g.dfs(0, 4, to_print=True)
-    print(g)
+    distances, predecessors = g.bellmen_ford(0)
+    print(distances)
+    print(predecessors)
