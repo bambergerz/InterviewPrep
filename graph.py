@@ -209,7 +209,7 @@ class Graph:
                     return child
                 frontier.append(child)
 
-    def bellmen_ford(self, source):
+    def bellmen_ford(self, source, to_print=1):
         """
         
         :param source: the source of the propagation for Bellman Ford algorithm.
@@ -227,12 +227,25 @@ class Graph:
         origin = self.get_node_by_id(source)
         distances[origin.node_id] = 0
 
+        # relax stage of BF:
+
         for i in range(len(self.nodes) - 1):
             for e in self.edges:
                 if distances[e.target.node_id] > distances[e.source.node_id] + e.weight:
                     distances[e.target.node_id] = distances[e.source.node_id] + e.weight
                     predecessors[e.target.node_id] = e.source.node_id
 
+        # check for negative weight cycle:
+
+        for e in self.edges:
+            assert isinstance(e, Edge)
+            if distances[e.source.node_id] + e.weight < distances[e.target.node_id]:
+                print("Graph contains a negative weight cycle!")
+                return None, None
+
+        if to_print:
+            print("distances are: " + str(distances))
+            print("predecessors are: " + str(predecessors))
         return distances, predecessors
 
 
@@ -254,6 +267,5 @@ if __name__ == "__main__":
     g.add_edge(cd)
     g.bfs(0, 4, to_print=True)
     g.dfs(0, 4, to_print=True)
-    distances, predecessors = g.bellmen_ford(0)
-    print(distances)
-    print(predecessors)
+    distances, predecessors = g.bellmen_ford(0, to_print=True)
+
