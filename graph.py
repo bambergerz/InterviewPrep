@@ -1,4 +1,6 @@
 from Queue import Queue
+import logging
+import os
 import sys
 
 
@@ -74,10 +76,17 @@ class Edge:
 
 
 class Graph:
+    graph_ID = 0
+
     def __init__(self, bidirectional=False):
         self._nodes = []
         self._edges = []
         self._bidirectional = bidirectional
+        self._id = Graph.graph_ID
+        logging.basicConfig(filename="graph%d.log" % self._id,
+                            level=logging.INFO,
+                            format='%(asctime)s:\n%(message)s\n\n',
+                            datefmt='%m/%d/%Y %I:%M:%S %p')
 
     def __str__(self):
         msg = ""
@@ -125,6 +134,7 @@ class Graph:
                 return i
         else:
             print("cannot find node with this ID in the grap")
+            logging.debug("Cannot find a node with id \"" + str(node_id) + "\"")
             return
 
     def bfs(self, start_node, target_node, to_print=1):
@@ -141,8 +151,10 @@ class Graph:
 
         msg = "BFS path: "
         node = self.get_node_by_id(start_node)
-        val = node.value
+        val = node.node_id
         if val == target_node:
+            msg += str(val)
+
             return node
 
         explored = set()
@@ -153,6 +165,7 @@ class Graph:
         while not found:
             if frontier.empty():
                 msg += "failed"
+                logging.info(msg)
                 if to_print:
                     print msg
                 return
@@ -163,6 +176,7 @@ class Graph:
             for child in children:
                 if child.value == target_node:
                     msg += str(child)
+                    logging.info(msg)
                     if to_print:
                         print msg
                     return child
@@ -182,8 +196,12 @@ class Graph:
 
         msg = "DFS path: "
         node = self.get_node_by_id(start_node)
-        val = node.value
+        val = node.node_id
         if val == target_node:
+            msg += str(val)
+            if to_print:
+                print(msg)
+            logging.info(msg)
             return node
 
         explored = set()
@@ -194,6 +212,7 @@ class Graph:
         while not found:
             if len(frontier) == 0:
                 msg += "failed"
+                logging.info(msg)
                 if to_print:
                     print msg
                 return
@@ -204,6 +223,7 @@ class Graph:
             for child in children:
                 if child.value == target_node:
                     msg += str(child)
+                    logging.info(msg)
                     if to_print:
                         print msg
                     return child
@@ -218,6 +238,10 @@ class Graph:
         """
         assert isinstance(source, int)
 
+        # TODO: optimize for loop such that if no values change
+        #  between two iterations, return immediately
+
+        msg = "Bellman Ford:\n"
         distances = {}
         predecessors = {}
         for node in self.nodes:
@@ -226,6 +250,8 @@ class Graph:
 
         origin = self.get_node_by_id(source)
         distances[origin.node_id] = 0
+        msg += ("Upon initialization, distances are: " + str(distances) + "\n")
+        msg += ("Upon initialization, predecessors are: " + str(predecessors) + "\n")
 
         # relax stage of BF:
 
@@ -235,6 +261,9 @@ class Graph:
                     distances[e.target.node_id] = distances[e.source.node_id] + e.weight
                     predecessors[e.target.node_id] = e.source.node_id
 
+            msg += "\nUpdated distances: " + str(distances) + "\n"
+            msg += "Updated predecessors: " + str(predecessors) + "\n"
+
         # check for negative weight cycle:
 
         for e in self.edges:
@@ -243,11 +272,21 @@ class Graph:
                 print("Graph contains a negative weight cycle!")
                 return None, None
 
-        if to_print:
-            print("distances are: " + str(distances))
-            print("predecessors are: " + str(predecessors))
+        msg += ("\nFinal distances are: " + str(distances) + '\n')
+        msg += ("Final predecessors are: " + str(predecessors) + "\n")
+        if to_print: print msg
+        logging.info(msg)
+
         return distances, predecessors
 
+    def deijkstra(self, source, to_print=1):
+        # TODO: finish this
+        predecessors = {}
+        distances = {}
+        # univisited =
+        for node in self.nodes:
+            predecessors[node.node_id] = None
+            distances[node.node_id] = sys.maxint
 
 if __name__ == "__main__":
     a = Node(1)
