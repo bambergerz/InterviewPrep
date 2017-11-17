@@ -94,7 +94,7 @@ class Graph:
         if the graph is bidirectional, the weight from a to b must be the weight from b to a. 
         """
         self._nodes = []
-        self._edges = []
+        self._edges = {}  # map a source node to all the edges which leave from it.
         self._bidirectional = bidirectional
         self._id = Graph.graph_ID
 
@@ -111,7 +111,7 @@ class Graph:
     def __str__(self):
         msg = ""
         msg += "Nodes are: " + str(self._nodes) + "\n"
-        msg += "Edges are: " + str(self._edges)
+        msg += "Edges are: " + str(self._edges.values())
         return msg
 
     @property
@@ -124,7 +124,11 @@ class Graph:
         
         :return: the list of the edges in this graph.
         """
-        return self._edges
+        return self._edges.values()
+
+    def get_edges_from_node(self, node_id):
+        node = self.get_node_by_id(node_id)
+        return self._edges[node]
 
     def print_properties(self):
         msg = "Bidirectional? " + str(self._bidirectional)
@@ -147,15 +151,19 @@ class Graph:
         :return: True once an edge has been added to this graph
         """
         assert isinstance(edge, Edge), "edge is not an Edge instance"
-        if self._bidirectional:
-            # TODO: ensure that if the graph is bidirectional,
-            # that weights in both directions are the same
-            pass
-        self._edges.append(edge)
+
         source = edge.source
         target = edge.target
+        self._edges[edge.source.node_id] = edge
         source.add_neighbor(target)
+
         if self._bidirectional:
+            potential_hazards = self._edges[target.node_id]
+            for edge in potential_hazards:
+                if edge.source.node_id == target.node_id and edge.target.node_id == source.node_id:
+                    print("This is bidirectional graph and an edge between these nodes already exists")
+                    return False
+
             target.add_neighbor(source)
         return True
 
@@ -170,10 +178,17 @@ class Graph:
         for i in self._nodes:
             if i.node_id == node_id:
                 return i
-        else:
-            print("cannot find node with this ID in the grap")
-            logging.debug("Cannot find a node with id \"" + str(node_id) + "\"")
-            return
+        print("cannot find node with this ID in the graph")
+        logging.debug("Cannot find a node with id \"" + str(node_id) + "\"")
+        return
+
+    def get_edge_by_id(self, edge_id):
+        assert isinstance(edge_id, int), "edge_id must be an int"
+        for i in self._edges.values():
+            if i.edge_id == edge_id:
+                return i
+        print("Cannot find the edge with this ID in the graph")
+        logging.debug("Cannot find an edge with the id \"" + str(edge_id) + "\"")
 
     def bfs(self, start_node, target_node, to_print=1):
         """
@@ -198,9 +213,8 @@ class Graph:
         explored = set()
         frontier = Queue()
         frontier.put(node)
-        found = False
 
-        while not found:
+        while True:
             if frontier.empty():
                 msg += "failed"
                 logging.info(msg)
@@ -212,7 +226,7 @@ class Graph:
             explored.add(node)
             children = node.neighbors
             for child in children:
-                if child.value == target_node:
+                if child.node_id == target_node:
                     msg += str(child)
                     logging.info(msg)
                     if to_print:
@@ -259,7 +273,7 @@ class Graph:
             explored.add(node)
             children = node.neighbors
             for child in children:
-                if child.value == target_node:
+                if child.node_id == target_node:
                     msg += str(child)
                     logging.info(msg)
                     if to_print:
