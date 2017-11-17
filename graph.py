@@ -183,6 +183,13 @@ class Graph:
         return
 
     def get_edge_by_id(self, edge_id):
+        """
+        
+        :param edge_id: the id of the edge we are trying to return
+        :return: either the edge with the ID we are looking for or None if
+        that edge does not currently exist in our graph.
+        """
+
         assert isinstance(edge_id, int), "edge_id must be an int"
         for i in self._edges.values():
             if i.edge_id == edge_id:
@@ -332,6 +339,15 @@ class Graph:
         return distances, predecessors
 
     def deijkstra(self, source, to_print=1):
+        """
+        
+        :param source: the source of the propagation Deisjkstra's algorithm.
+        an int which represents a valid node id.
+        :param to_print: True if you wish to print the profression of the algorithn. False otherwise. 
+        :return: a tuple consisting of (distances, predecessors)
+        distances is an array of nodes
+        predecessors is an array of nodes.
+        """
         # TODO: finish this
         origin = self.get_node_by_id(source)
         predecessors = {}
