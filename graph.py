@@ -5,7 +5,7 @@ import os
 import sys
 
 
-class Node:
+class Node(object):
     node_ID = 0
 
     def __init__(self, value):
@@ -52,7 +52,8 @@ class Node:
         assert isinstance(neighbor, Node)
         self._neighbors.add(neighbor)
 
-class Edge:
+
+class Edge(object):
     edge_ID = 0
 
     def __init__(self, source, target, weight=None):
@@ -84,7 +85,7 @@ class Edge:
         return self._weight
 
 
-class Graph:
+class Graph(object):
     graph_ID = 0
 
     def __init__(self, bidirectional=False):
@@ -348,7 +349,7 @@ class Graph:
         distances is an array of nodes
         predecessors is an array of nodes.
         """
-        # TODO: finish this
+        # TODO: Implement a priority queue before trying this
         origin = self.get_node_by_id(source)
         predecessors = {}
         distances = {}
