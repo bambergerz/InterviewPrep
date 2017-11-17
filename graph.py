@@ -1,4 +1,5 @@
 from Queue import Queue
+from Queue import PriorityQueue
 import logging
 import os
 import sys
@@ -21,6 +22,15 @@ class Node:
     def __repr__(self):
         return str(self.value)
 
+    def __gt__(self, other):
+        assert isinstance(other, Node)
+        return self.value > other.value
+
+    def __lt__(self, other):
+        assert isinstance(other, Node)
+        return self.value < other.value
+
+
     @property
     def node_id(self):
         return self._id
@@ -41,7 +51,6 @@ class Node:
         """
         assert isinstance(neighbor, Node)
         self._neighbors.add(neighbor)
-
 
 class Edge:
     edge_ID = 0
@@ -79,10 +88,21 @@ class Graph:
     graph_ID = 0
 
     def __init__(self, bidirectional=False):
+        """
+        
+        :param bidirectional: whether or not the graph is bidirectional
+        if the graph is bidirectional, the weight from a to b must be the weight from b to a. 
+        """
         self._nodes = []
         self._edges = []
         self._bidirectional = bidirectional
         self._id = Graph.graph_ID
+
+        # set up the logger
+        filename = "graph%d.log" % self._id
+        cur_dir = os.getcwd()
+        if filename in os.listdir(cur_dir):
+            os.remove(filename)
         logging.basicConfig(filename="graph%d.log" % self._id,
                             level=logging.INFO,
                             format='%(asctime)s:\n%(message)s\n\n',
@@ -100,6 +120,10 @@ class Graph:
 
     @property
     def edges(self):
+        """
+        
+        :return: the list of the edges in this graph.
+        """
         return self._edges
 
     def print_properties(self):
@@ -107,12 +131,26 @@ class Graph:
         print msg
 
     def add_node(self, node):
+        """
+        
+        :param node: the node object we are adding to the graph.
+        :return: True once the node has been added to the graph.
+        """
         assert isinstance(node, Node), "node is not a Node instance"
         self._nodes.append(node)
         return True
 
     def add_edge(self, edge):
+        """
+        
+        :param edge: An edge object to add to this graph
+        :return: True once an edge has been added to this graph
+        """
         assert isinstance(edge, Edge), "edge is not an Edge instance"
+        if self._bidirectional:
+            # TODO: ensure that if the graph is bidirectional,
+            # that weights in both directions are the same
+            pass
         self._edges.append(edge)
         source = edge.source
         target = edge.target
@@ -281,12 +319,17 @@ class Graph:
 
     def deijkstra(self, source, to_print=1):
         # TODO: finish this
+        origin = self.get_node_by_id(source)
         predecessors = {}
         distances = {}
-        # univisited =
+        visited = set()
+        queue = PriorityQueue()
         for node in self.nodes:
             predecessors[node.node_id] = None
             distances[node.node_id] = sys.maxint
+            queue.put(node)
+        distances[source] = 0
+
 
 if __name__ == "__main__":
     a = Node(1)
@@ -307,4 +350,4 @@ if __name__ == "__main__":
     g.bfs(0, 4, to_print=True)
     g.dfs(0, 4, to_print=True)
     distances, predecessors = g.bellmen_ford(0, to_print=True)
-
+    g.deijkstra(0, to_print=True)
