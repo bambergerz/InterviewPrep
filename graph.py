@@ -100,10 +100,10 @@ class Graph(object):
         self._id = Graph.graph_ID
 
         # set up the logger
-        filename = "graph%d.log" % self._id
-        cur_dir = os.getcwd()
-        if filename in os.listdir(cur_dir):
-            os.remove(filename)
+        # filename = "graph%d.log" % self._id
+        # cur_dir = os.getcwd()
+        # if filename in os.listdir(cur_dir):
+            # os.remove(filename)
         logging.basicConfig(filename="graph%d.log" % self._id,
                             level=logging.INFO,
                             format='%(asctime)s:\n%(message)s\n\n',
